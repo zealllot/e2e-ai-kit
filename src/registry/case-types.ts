@@ -44,21 +44,34 @@ export class UnknownCaseTypeError extends Error {
   }
 }
 
+const RUNNABLE_REQUIRED_FRONTMATTER = [
+  'feature',
+  'case_type',
+  'status',
+  'generated_by',
+  'generated_at',
+  'source_docs',
+  'classification',
+  'tier_ceiling',
+  'lives_in',
+  'storage_states_required',
+] as const;
+
+const REFERENCE_REQUIRED_FRONTMATTER = [
+  'feature',
+  'case_type',
+  'status',
+  'generated_by',
+  'generated_at',
+  'source_docs',
+] as const;
+
+const REQUIRED_ON_APPROVED = ['approved_by', 'approved_at', 'reviewer_checked'] as const;
+
 const HAPPY_PATH: CaseTypeSpec = {
   caseType: 'happy-path',
-  requiredFrontmatter: [
-    'feature',
-    'case_type',
-    'status',
-    'generated_by',
-    'generated_at',
-    'source_docs',
-    'classification',
-    'tier_ceiling',
-    'lives_in',
-    'storage_states_required',
-  ],
-  requiredOnApproved: ['approved_by', 'approved_at', 'reviewer_checked'],
+  requiredFrontmatter: RUNNABLE_REQUIRED_FRONTMATTER,
+  requiredOnApproved: REQUIRED_ON_APPROVED,
   forbiddenFrontmatter: [],
   requiredBodySections: ['Required fields', 'Tests'],
   reviewerCheckedEnum: [
@@ -68,8 +81,67 @@ const HAPPY_PATH: CaseTypeSpec = {
   ],
 };
 
+const STATE_MACHINE: CaseTypeSpec = {
+  caseType: 'state-machine',
+  requiredFrontmatter: RUNNABLE_REQUIRED_FRONTMATTER,
+  requiredOnApproved: REQUIRED_ON_APPROVED,
+  forbiddenFrontmatter: [],
+  requiredBodySections: ['State machine', 'Roles & access', 'Tests'],
+  reviewerCheckedEnum: [
+    'validators_verified',
+    'edge_cases_listed',
+    'permission_scenarios_complete',
+    'state_transitions_verified',
+    'role_x_state_matrix_verified',
+  ],
+};
+
+const REFERENCE: CaseTypeSpec = {
+  caseType: 'reference',
+  requiredFrontmatter: REFERENCE_REQUIRED_FRONTMATTER,
+  requiredOnApproved: REQUIRED_ON_APPROVED,
+  // reference cases are NOT runnable; declaring lives_in or
+  // storage_states_required would mislead the Automation Agent.
+  forbiddenFrontmatter: ['lives_in', 'storage_states_required'],
+  requiredBodySections: ['Pattern'],
+  reviewerCheckedEnum: [
+    'pattern_accurate',
+    'related_runnable_cases_enumerated',
+  ],
+};
+
+const FAMILY: CaseTypeSpec = {
+  caseType: 'family',
+  requiredFrontmatter: RUNNABLE_REQUIRED_FRONTMATTER,
+  requiredOnApproved: REQUIRED_ON_APPROVED,
+  forbiddenFrontmatter: [],
+  requiredBodySections: ['Family members'],
+  reviewerCheckedEnum: [
+    'family_members_enumerated',
+    'shared_assertions_identified',
+    'per_member_specifics_noted',
+  ],
+};
+
+const SAVE_FLOW: CaseTypeSpec = {
+  caseType: 'save-flow',
+  requiredFrontmatter: RUNNABLE_REQUIRED_FRONTMATTER,
+  requiredOnApproved: REQUIRED_ON_APPROVED,
+  forbiddenFrontmatter: [],
+  requiredBodySections: ['Form preconditions', 'Save assertion', 'Failure modes'],
+  reviewerCheckedEnum: [
+    'form_preconditions_complete',
+    'save_assertion_specific',
+    'failure_modes_enumerated',
+  ],
+};
+
 const REGISTRY: Partial<Record<CaseType, CaseTypeSpec>> = {
   'happy-path': HAPPY_PATH,
+  'state-machine': STATE_MACHINE,
+  reference: REFERENCE,
+  family: FAMILY,
+  'save-flow': SAVE_FLOW,
 };
 
 export function getCaseTypeSpec(caseType: string): CaseTypeSpec {

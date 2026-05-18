@@ -110,16 +110,10 @@ test('lintCaseFile: case_type not in closed enum → case_type_unknown', () => {
   }
 });
 
-test('lintCaseFile: case_type in closed enum but not yet registered → case_type_not_yet_registered', () => {
-  const bad = fixtureGoodHappyPath().replace(/case_type: happy-path/, 'case_type: state-machine');
-  const path = makeTempFile(bad);
-  try {
-    const result = lintCaseFile(path);
-    expect(result.errors.some((e) => e.ruleId === 'case.frontmatter.case_type_not_yet_registered')).toBe(true);
-  } finally {
-    rmSync(path, { force: true });
-  }
-});
+// Slice 2 (kit issue #3) registered all five case_type values, so the
+// "case_type_not_yet_registered" ruleId is currently unreachable. The
+// ruleId stays in the runner as a safety net for any future case_type
+// that lands in the closed enum but ships unregistered.
 
 test('lintCaseFile: missing required body section → case.body.section_missing', () => {
   const bad = fixtureGoodHappyPath().replace(/## Tests[\s\S]*$/, '');

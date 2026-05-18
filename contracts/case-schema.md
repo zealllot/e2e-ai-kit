@@ -1,8 +1,8 @@
 # Case `.md` schema
 
-> Status: `happy-path` complete (v0.2). Other 4 `case_type` values
-> registered in the closed enum but not yet specified — Slice 2
-> (kit issue #3) fills them in.
+> Status: all 5 `case_type` values registered and enforced (v0.2,
+> Slices 1-2 shipped). Slices 3 (app-context-lint) and 4
+> (skill-slot-lint) live in sibling contract docs.
 
 A **Case** is a markdown file under the substrate's `tests/cases/`
 directory. Its frontmatter conforms to this schema; its body
@@ -14,18 +14,16 @@ case` reads.
 
 ## Closed `case_type` enum
 
-| Value | Status | Spec |
+| Value | Required body sections | Forbidden frontmatter |
 |---|---|---|
-| `happy-path` | **available** | this file (below) |
-| `state-machine` | reserved | Slice 2 |
-| `reference` | reserved | Slice 2 |
-| `family` | reserved | Slice 2 |
-| `save-flow` | reserved | Slice 2 |
+| `happy-path` | `Required fields`, `Tests` | — |
+| `state-machine` | `State machine`, `Roles & access`, `Tests` | — |
+| `reference` | `Pattern` | `lives_in`, `storage_states_required` |
+| `family` | `Family members` | — |
+| `save-flow` | `Form preconditions`, `Save assertion`, `Failure modes` | — |
 
 Any case using a value outside this five-element enum fails lint with
-`ruleId: case.frontmatter.case_type_unknown`. Any case using a
-reserved value fails with
-`ruleId: case.frontmatter.case_type_not_yet_registered`.
+`ruleId: case.frontmatter.case_type_unknown`.
 
 ## Frontmatter (always-required keys)
 
@@ -39,9 +37,10 @@ of `case_type` or `status`. Lint fires
 | `case_type` | string | Member of the closed enum above |
 | `status` | string | `pending-approval` or `approved` (rule: `case.frontmatter.status_invalid` if anything else) |
 
-## Frontmatter required for `happy-path`
+## Frontmatter required for runnable case_types
 
-In addition to the always-required keys, `happy-path` requires:
+These keys apply to `happy-path`, `state-machine`, `family`, and
+`save-flow` (every case_type except `reference`):
 
 | Key | Type | Notes |
 |---|---|---|
@@ -52,6 +51,24 @@ In addition to the always-required keys, `happy-path` requires:
 | `tier_ceiling` | integer (1, 2, or 3) | Max auto-fix tier the Maintenance Agent may apply |
 | `lives_in` | string | Path to the spec file that implements this case |
 | `storage_states_required` | array of strings | storageState file paths the spec uses |
+
+## Frontmatter required for `reference`
+
+Reference cases are documentation, not runnable specs. They require
+only the always-required keys plus:
+
+| Key | Type | Notes |
+|---|---|---|
+| `generated_by` | string | Agent + model identifier |
+| `generated_at` | string (YYYY-MM-DD) | — |
+| `source_docs` | array of strings | — |
+
+And **forbid**:
+
+| Key | Rule |
+|---|---|
+| `lives_in` | `case.frontmatter.lives_in_forbidden` |
+| `storage_states_required` | `case.frontmatter.storage_states_required_forbidden` |
 
 ## Frontmatter required when `status: approved`
 
@@ -70,24 +87,34 @@ Optional companion key:
 |---|---|---|
 | `approval_caveat` | string | Free-text record of any review shortcut (e.g. `fast-mode-skip`). Optional but encouraged when the reviewer did not cover the full checklist |
 
-### `reviewer_checked` enum for `happy-path`
+### `reviewer_checked` enum per `case_type`
 
-The reviewer of an approved `happy-path` case must record which
-boxes they actually checked, drawn from this closed list:
+The reviewer of an approved case must record which boxes they actually
+checked. Allowed values are scoped per case_type; using a value from
+the wrong enum fires `case.frontmatter.reviewer_checked_invalid_value`.
 
-- `validators_verified`
-- `edge_cases_listed`
-- `permission_scenarios_complete`
+| case_type | Allowed `reviewer_checked` values |
+|---|---|
+| `happy-path` | `validators_verified`, `edge_cases_listed`, `permission_scenarios_complete` |
+| `state-machine` | the above + `state_transitions_verified`, `role_x_state_matrix_verified` |
+| `reference` | `pattern_accurate`, `related_runnable_cases_enumerated` |
+| `family` | `family_members_enumerated`, `shared_assertions_identified`, `per_member_specifics_noted` |
+| `save-flow` | `form_preconditions_complete`, `save_assertion_specific`, `failure_modes_enumerated` |
 
 A `reviewer_checked: []` empty list when `status: approved` is itself
 a violation (`case.frontmatter.reviewer_checked_non_empty`).
 
-## Required body sections for `happy-path`
+## Required body sections per `case_type`
 
 The body must contain these H2 (`##`) headings, in any order:
 
-- `## Required fields`
-- `## Tests`
+| case_type | Required H2 sections |
+|---|---|
+| `happy-path` | `## Required fields`, `## Tests` |
+| `state-machine` | `## State machine`, `## Roles & access`, `## Tests` |
+| `reference` | `## Pattern` |
+| `family` | `## Family members` |
+| `save-flow` | `## Form preconditions`, `## Save assertion`, `## Failure modes` |
 
 Missing sections produce `ruleId: case.body.section_missing` with
 the section name in the `section` field.
@@ -105,14 +132,17 @@ common conventions on mcd-website's cases:
   cases)
 - `related_cases`: array of references to peer case files
 
-## Full example (lints clean)
+## Examples
 
-See `../tests/fixtures/cases/good-happy-path.md`.
+| case_type | Good fixture | Bad fixture + ruleId triggered |
+|---|---|---|
+| `happy-path` | `good-happy-path.md` | `bad-missing-approved-by.md` → `case.frontmatter.approved_by_required` |
+| `state-machine` | `good-state-machine.md` | `bad-state-machine-missing-section.md` → `case.body.section_missing` |
+| `reference` | `good-reference.md` | `bad-reference-declares-lives-in.md` → `case.frontmatter.lives_in_forbidden` |
+| `family` | `good-family.md` | `bad-family-invalid-reviewer-check.md` → `case.frontmatter.reviewer_checked_invalid_value` |
+| `save-flow` | `good-save-flow.md` | `bad-save-flow-missing-failure-modes.md` → `case.body.section_missing` |
 
-## Negative example (lints with one violation)
-
-See `../tests/fixtures/cases/bad-missing-approved-by.md` — produces
-`case.frontmatter.approved_by_required`.
+All fixtures live in `../tests/fixtures/cases/`.
 
 ## CLI invocation
 
