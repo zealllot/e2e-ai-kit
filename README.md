@@ -15,9 +15,11 @@ qor-like (and eventually any) legacy admin codebase to produce both
    tries to prove, where each load-bearing claim currently stands
 2. [`CONTEXT.md`](./CONTEXT.md) — glossary: Product / Substrate / Output,
    the six Product components, three contracts, risk triples, governance
-3. [`docs/ONBOARDING.md`](./docs/ONBOARDING.md) — 5-stage MVP for taking
+3. [`docs/WORKFLOW.md`](./docs/WORKFLOW.md) — day-to-day operating
+   model: the four workflows, SLAs, and what you should/shouldn't do
+4. [`docs/ONBOARDING.md`](./docs/ONBOARDING.md) — 5-stage MVP for taking
    the kit to a new substrate
-4. [`docs/adr/`](./docs/adr/) — load-bearing design decisions (currently 2)
+5. [`docs/adr/`](./docs/adr/) — load-bearing design decisions (currently 2)
 
 ## Repository layout
 
@@ -26,6 +28,7 @@ qor-like (and eventually any) legacy admin codebase to produce both
 ├── CONTEXT.md                          glossary (canonical)
 ├── PURPOSE.md                          manifesto + status board
 ├── docs/
+│   ├── WORKFLOW.md                     day-to-day operating model
 │   ├── ONBOARDING.md                   5-stage onboarding for new substrates
 │   └── adr/                            architecture decision records
 ├── contracts/                          the 3 contracts a substrate must satisfy

@@ -52,6 +52,7 @@ Product's contract with its readers.
 ## See also
 
 - [`CONTEXT.md`](./CONTEXT.md) — glossary, six Product components, three contracts, risk triples, governance
+- [`docs/WORKFLOW.md`](./docs/WORKFLOW.md) — day-to-day operating model (four workflows, SLAs, dos & don'ts)
 - [`docs/ONBOARDING.md`](./docs/ONBOARDING.md) — 5-stage MVP onboarding for a new substrate
 - [`docs/adr/0001-product-substrate-output.md`](./docs/adr/0001-product-substrate-output.md) — Product/Substrate/Output split + B2 framework slot
 - [`docs/adr/0002-extract-to-separate-repo.md`](./docs/adr/0002-extract-to-separate-repo.md) — why this kit lives in its own repo
