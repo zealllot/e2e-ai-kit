@@ -1,49 +1,104 @@
 # Application Context Document schema
 
-> **Status: stub.** The design intent is captured in
-> [`../CONTEXT.md`](../CONTEXT.md) § Product components (component 6).
-> This file will hold the full section spec + frontmatter requirements
-> + the `source: probe | human | probe+human` semantics + the probe
-> family that auto-fills `source: probe` sections. Until then, see the
-> working `tests/app.context.md` in the first substrate
-> (`mcd-website/tests/app.context.md`) for an example.
+> Status: v0.2 shipped (Slice 3). Enforced by `npx e2e-ai-kit lint
+> app-context`.
 
-## What this file will contain (TODO)
+A substrate's **Application Context Document** lives at a single
+canonical path: `tests/app.context.md` (in the substrate, not in this
+kit). It is the upstream artifact every Test Case Agent reads to know
+what the substrate looks like before producing case files.
 
-- Frontmatter spec: `substrate`, `last_full_exploration`,
-  `exploration_agent`
-- 10 required sections + 1 optional section, each with:
-  - Per-section metadata format (`source:`, `last_probed`,
-    `last_curated`, `last_verified_by_human`, `revision_notes`)
-  - `source:` semantics:
-    - `probe` — Agent auto-fills; humans must NOT hand-edit; refresh
-      by re-running the probe
-    - `human` — humans write; Agent must NOT overwrite
-    - `probe+human` — probe drafts; humans verify and sign
-- Required sections (with skip-if-N/A rules):
-  1. Product summary + critical journeys (human)
-  2. Environments (probe)
-  3. Permission model — roles + groups (probe, if substrate has auth)
-  4. Auth strategy (probe+human, if substrate has auth)
-  5. Route map (probe)
-  6. State machines (human, if substrate has them)
-  7. Known quirks — substrate-level, NOT framework-level (human)
-  8. External systems (human, if any)
-  9. Out of scope (human)
-  10. Exploration log (agent, append-only)
-- Optional: Notifications / on-call (human)
-- Probe family + which probe owns which section
-- `app-context-lint` invariants (required sections present, source
-  markers present, freshness thresholds)
-- The substrate vs framework quirks boundary rule: **"would this
-  quirk still hold under a different framework?"** Yes → here. No →
-  framework slot.
+The kit enforces frontmatter, required sections, per-section `source:`
+markers, and human-verification metadata on `probe+human` sections.
 
-## Related Product components
+## Frontmatter
 
-- Product component 6 — Application Context Document (required
-  upstream artifact)
-- Product component 5 — Skill-as-sediment (the boundary between this
-  doc and the framework slot)
-- Governance — Sediment PR SLA (2 working days)
-  ([`../CONTEXT.md`](../CONTEXT.md) § Governance)
+| Key | Type | Notes |
+|---|---|---|
+| `substrate` | string | Identifier for the substrate (e.g. `mcd-website`). Rule: `app_context.frontmatter.substrate_required` |
+| `last_full_exploration` | string (YYYY-MM-DD) | Date Exploration Agent last regenerated probe-sourced sections. Rule: `app_context.frontmatter.last_full_exploration_required` |
+| `exploration_agent` | string | Agent identifier + model. Rule: `app_context.frontmatter.exploration_agent_required` |
+
+## Required sections
+
+Eleven H2 sections in document order. Each section's heading text may be
+prefixed with `## <N>. ` for ordering (the lint strips numeric
+prefixes before matching). Each section must declare its
+`<!-- source: ... -->` HTML comment as the first non-blank line under
+the heading.
+
+| # | Section | source | Required |
+|---|---|---|---|
+| 1 | Product summary | `human` | yes |
+| 2 | Environments | `probe` | yes |
+| 3 | User roles + Groups | `probe` | yes |
+| 4 | Auth strategy | `probe+human` | yes (with `last_verified_by_human`) |
+| 5 | Route map | `probe` | yes |
+| 6 | State machines | `human` | yes |
+| 7 | Known quirks | `human` | yes |
+| 8 | External systems | `human` | yes |
+| 9 | Notifications | `human` | no (optional) |
+| 10 | Out of scope | `human` | yes |
+| 11 | Exploration log | `agent` | yes |
+
+Missing required section → `app_context.body.section_missing` with the
+canonical title in the `section` field.
+
+## Per-section source marker
+
+Each section MUST declare an HTML comment of the form:
+
+```html
+<!-- source: <type>, last_probed: 2026-05-19, last_curated: 2026-05-19 -->
+```
+
+Recognized keys:
+
+- `source` (required) — one of `human`, `probe`, `probe+human`,
+  `agent`. Lint rules:
+  - missing → `app_context.section.source_marker_missing`
+  - unrecognized value → `app_context.section.source_invalid`
+  - value disagrees with the schema → `app_context.section.source_mismatch`
+- `last_probed` — date the Exploration Agent last refreshed this
+  section. Conventional but not enforced in v0.2.
+- `last_curated` — date a human last edited this section.
+  Conventional but not enforced in v0.2.
+- `last_verified_by_human` — required on `source: probe+human`
+  sections. Rule: `app_context.section.last_verified_by_human_required`
+  if missing.
+
+Multi-line comments are supported; newlines inside the comment are
+folded.
+
+## Sedimentation routing reminder
+
+A new substrate-specific quirk discovered by an Agent run goes into
+`## 7. Known quirks` (this document), NOT into the framework slot.
+The slot enforces this with its own forbidden-content rules — see
+[`slot-contract.md`](./slot-contract.md).
+
+## Examples
+
+- Good: `../tests/fixtures/app-context/good-app-context.md`
+- Bad (missing section): `bad-app-context-missing-section.md` →
+  `app_context.body.section_missing`
+- Bad (missing source marker): `bad-app-context-missing-source-marker.md`
+  → `app_context.section.source_marker_missing`
+- Bad (probe+human without last_verified_by_human):
+  `bad-app-context-missing-human-verification.md` →
+  `app_context.section.last_verified_by_human_required`
+
+## CLI invocation
+
+```sh
+npx e2e-ai-kit lint app-context                          # default: tests/app.context.md
+npx e2e-ai-kit lint app-context path/to/app.context.md   # explicit
+```
+
+Exit codes: 0 / 1 / 2 (same convention as `lint case`).
+
+## Related
+
+- [`./case-schema.md`](./case-schema.md)
+- [`../CONTEXT.md` § Product components (component 6)](../CONTEXT.md)
+- [`../docs/WORKFLOW.md`](../docs/WORKFLOW.md)

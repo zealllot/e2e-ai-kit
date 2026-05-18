@@ -60,3 +60,40 @@ test('walkSections: trailing whitespace trimmed from content', () => {
   const body = '## A\nbody\n\n\n';
   expect(walkSections(body)[0]?.content).toBe('body');
 });
+
+test('walkSections: HTML comment after heading is parsed into metadata + consumed from content', () => {
+  const body = '## Environments\n<!-- source: probe, last_probed: 2026-05-19 -->\n\nThe environments are.\n';
+  const sections = walkSections(body);
+  expect(sections[0]?.metadata).toEqual({ source: 'probe', last_probed: '2026-05-19' });
+  expect(sections[0]?.content).not.toContain('<!--');
+  expect(sections[0]?.content).toContain('The environments are.');
+});
+
+test('walkSections: multi-line HTML comment metadata is folded', () => {
+  const body = '## Auth strategy\n<!-- source: probe+human,\n     last_probed: 2026-05-19,\n     last_verified_by_human: 2026-05-19 -->\nbody\n';
+  const sections = walkSections(body);
+  expect(sections[0]?.metadata).toEqual({
+    source: 'probe+human',
+    last_probed: '2026-05-19',
+    last_verified_by_human: '2026-05-19',
+  });
+});
+
+test('walkSections: malformed HTML comment falls through as content with empty metadata', () => {
+  const body = '## X\n<!-- no key value pairs here, just narrative -->\nbody\n';
+  const sections = walkSections(body);
+  expect(sections[0]?.metadata).toEqual({});
+  expect(sections[0]?.content).toContain('<!--');
+});
+
+test('walkSections: heading without metadata comment → empty metadata, content unchanged', () => {
+  const body = '## Y\nbody\n';
+  expect(walkSections(body)[0]?.metadata).toEqual({});
+});
+
+test('walkSections: HTML comment NOT at top of section (after some text) → not parsed as metadata', () => {
+  const body = '## Z\nintro text\n<!-- source: probe -->\nmore text';
+  const sections = walkSections(body);
+  expect(sections[0]?.metadata).toEqual({});
+  expect(sections[0]?.content).toContain('<!--');
+});

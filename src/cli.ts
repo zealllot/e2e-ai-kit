@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { lintAppContextFile } from './lint/app-context-runner.ts';
 import { lintCaseFile, type LintResult } from './lint/runner.ts';
 import { formatResult } from './lint/result-formatter.ts';
 
@@ -9,8 +10,16 @@ interface CliResult {
   output: string;
 }
 
-const DEFAULT_GLOBS: Record<string, string> = {
-  case: 'tests/cases',
+interface KindConfig {
+  /** Default glob directory when no files supplied (read all .md). */
+  defaultDir?: string;
+  /** Default specific file when no files supplied. */
+  defaultFile?: string;
+}
+
+const KINDS: Record<string, KindConfig> = {
+  case: { defaultDir: 'tests/cases' },
+  'app-context': { defaultFile: 'tests/app.context.md' },
 };
 
 /**
@@ -42,19 +51,21 @@ async function runInternal(argv: string[]): Promise<CliResult> {
   if (subcommand !== 'lint') {
     return { exitCode: 2, output: `unknown subcommand '${subcommand}'\n\n${usage()}` };
   }
-  if (!kind || !(kind in DEFAULT_GLOBS)) {
+  if (!kind || !(kind in KINDS)) {
     return {
       exitCode: 2,
-      output: `unknown lint kind '${kind ?? ''}'. Valid: ${Object.keys(DEFAULT_GLOBS).join(', ')}\n`,
+      output: `unknown lint kind '${kind ?? ''}'. Valid: ${Object.keys(KINDS).join(', ')}\n`,
     };
   }
 
   const filesToLint = files.length > 0 ? files : defaultFilesForKind(kind);
 
   if (filesToLint.length === 0) {
+    const cfg = KINDS[kind];
+    const hint = cfg?.defaultFile ?? `${cfg?.defaultDir}/*.md`;
     return {
       exitCode: 2,
-      output: `no files matched. Glob default for '${kind}': ${DEFAULT_GLOBS[kind]}/*.md (directory missing or empty)\n`,
+      output: `no files matched. Default for '${kind}': ${hint} (missing or empty)\n`,
     };
   }
 
@@ -65,6 +76,8 @@ async function runInternal(argv: string[]): Promise<CliResult> {
     let result: LintResult;
     if (kind === 'case') {
       result = lintCaseFile(file);
+    } else if (kind === 'app-context') {
+      result = lintAppContextFile(file);
     } else {
       return { exitCode: 2, output: `unsupported lint kind '${kind}'\n` };
     }
@@ -82,7 +95,12 @@ async function runInternal(argv: string[]): Promise<CliResult> {
 }
 
 function defaultFilesForKind(kind: string): string[] {
-  const dir = DEFAULT_GLOBS[kind];
+  const cfg = KINDS[kind];
+  if (!cfg) return [];
+  if (cfg.defaultFile) {
+    return existsSync(cfg.defaultFile) ? [cfg.defaultFile] : [];
+  }
+  const dir = cfg.defaultDir;
   if (!dir || !existsSync(dir) || !statSync(dir).isDirectory()) return [];
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
@@ -93,12 +111,14 @@ function usage(): string {
   return [
     'usage: e2e-ai-kit lint <kind> [files...]',
     '',
-    `  kinds: ${Object.keys(DEFAULT_GLOBS).join(', ')}`,
-    '  when no files are given, the kind\'s default glob is used',
+    `  kinds: ${Object.keys(KINDS).join(', ')}`,
+    '  when no files are given, the kind\'s default is used',
     '',
     'examples:',
     '  e2e-ai-kit lint case',
     '  e2e-ai-kit lint case tests/cases/my-feature.md',
+    '  e2e-ai-kit lint app-context',
+    '  e2e-ai-kit lint app-context path/to/app.context.md',
     '',
   ].join('\n') + '\n';
 }
