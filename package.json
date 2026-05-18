@@ -1,0 +1,28 @@
+{
+  "name": "@theplant/e2e-ai-kit",
+  "version": "0.2.0-preview.0",
+  "description": "AI-assisted E2E testing kit. v0.2 internal preview.",
+  "license": "ISC",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "e2e-ai-kit": "./bin/e2e-ai-kit.js"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:list": "playwright test --list"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "yaml": "^2.4.0"
+  },
+  "dependencies": {
+    "yaml": "^2.4.0"
+  }
+}
