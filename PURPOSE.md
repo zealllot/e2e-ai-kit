@@ -13,7 +13,23 @@ Two co-equal success criteria — both currently **hypotheses**, not findings:
 | Criterion | Falsifiable form | Current state |
 |---|---|---|
 | **Portability** | After a second substrate onboards via [`docs/ONBOARDING.md`](./docs/ONBOARDING.md), the Product produces a green spec in ≤1 week using the 3 contracts, without rebuilding methodology from scratch | UNVERIFIED — only mcd-website so far |
-| **Coverage Yield** | After onboarding, ≥X% of substrate's auth × resource cells / state-machine paths are covered (X is per-substrate, set in Phase 0 of onboarding) | mcd-website: 2541/2541 permission cells covered; ~1800 specs total. Threshold X for new substrates: TBD per substrate |
+| **Coverage Yield** | After onboarding, ≥X% of substrate's auth × resource cells / state-machine paths are covered (X is per-substrate, set in Phase 0 of onboarding) | mcd-website (substrate #1): 2541/2541 permission cells covered; **1930 Playwright specs discovered, smoke + sample case (mmr-coupon-create) both green** (2026-05-19). Threshold X for new substrates: TBD per substrate |
+
+## v0.2 substrate-side verification (mcd-website, 2026-05-19)
+
+The three lints exercised against the first substrate. Single-line
+proof that the contracts hold on a real codebase:
+
+```
+npx e2e-ai-kit lint case        → ok (13 files linted)
+npx e2e-ai-kit lint app-context → ok (1 file linted)
+npx e2e-ai-kit lint slot        → ok (1 file linted)
+```
+
+This bumps Hypothesis 3 (drift can be mechanically prevented) to
+*finding* on substrate #1 — three contracts × one substrate. The
+other hypotheses still need a second substrate before Portability
+becomes a finding.
 
 ## Six load-bearing hypotheses
 
