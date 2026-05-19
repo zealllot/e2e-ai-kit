@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import { parseFrontmatter, FrontmatterParseError } from '../parser/frontmatter.ts';
-import { walkSections, type Section } from '../parser/section-walker.ts';
+import { normalizeSectionTitle, walkSections, type Section } from '../parser/section-walker.ts';
 import {
   ALWAYS_REQUIRED_FRONTMATTER,
   APP_CONTEXT_SECTIONS,
@@ -63,10 +63,10 @@ export function lintAppContextFile(filepath: string): LintResult {
 
   // (2) Required sections present.
   const sections = walkSections(body);
-  // Map title-with-prefix-stripped → Section
+  // Map (ordinal-prefix-stripped + parenthesized-suffix-stripped) → Section
   const present = new Map<string, Section>();
   for (const s of sections) {
-    present.set(stripOrdinalPrefix(s.title), s);
+    present.set(normalizeSectionTitle(stripOrdinalPrefix(s.title)), s);
   }
 
   for (const title of listRequiredSectionTitles()) {

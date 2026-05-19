@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 import { parseFrontmatter, FrontmatterParseError } from '../parser/frontmatter.ts';
-import { walkSections } from '../parser/section-walker.ts';
+import { normalizeSectionTitle, walkSections } from '../parser/section-walker.ts';
 import {
   listRequiredSlotTitles,
   SLOT_REQUIRED_FRONTMATTER,
@@ -65,10 +65,11 @@ export function lintSlotFile(filepath: string): LintResult {
     }
   }
 
-  // (2) Required S1-S9 section titles.
-  const titles = new Set(walkSections(body).map((s) => s.title));
+  // (2) Required S1-S9 section titles. Match by normalized title
+  // (trailing parenthesized annotations stripped).
+  const titles = new Set(walkSections(body).map((s) => normalizeSectionTitle(s.title)));
   for (const title of listRequiredSlotTitles()) {
-    if (!titles.has(title)) {
+    if (!titles.has(normalizeSectionTitle(title))) {
       errors.push({
         file: filepath,
         ruleId: 'slot.body.section_missing',

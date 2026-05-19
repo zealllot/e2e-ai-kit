@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import { parseFrontmatter, FrontmatterParseError } from '../parser/frontmatter.ts';
-import { walkSections } from '../parser/section-walker.ts';
+import { normalizeSectionTitle, walkSections } from '../parser/section-walker.ts';
 import {
   getCaseTypeSpec,
   isKnownCaseType,
@@ -172,9 +172,10 @@ export function lintCaseFile(filepath: string): LintResult {
   }
 
   // (6) requiredBodySections (per case_type spec).
-  const sectionTitles = new Set(walkSections(body).map((s) => s.title));
+  // Match by normalized title (trailing parenthesized notes stripped).
+  const sectionTitles = new Set(walkSections(body).map((s) => normalizeSectionTitle(s.title)));
   for (const required of spec.requiredBodySections) {
-    if (!sectionTitles.has(required)) {
+    if (!sectionTitles.has(normalizeSectionTitle(required))) {
       errors.push({
         file: filepath,
         ruleId: `case.body.section_missing`,

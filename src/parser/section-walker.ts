@@ -15,6 +15,17 @@ export interface Section {
 
 const HEADING_RE = /^(#{1,6})\s+(.+?)\s*$/;
 const HTML_COMMENT_RE = /<!--\s*([\s\S]*?)\s*-->/;
+const TRAILING_PAREN_RE = /\s*\([^)]*\)\s*$/;
+
+/**
+ * Strip a trailing parenthesized annotation from a section title before
+ * comparing to canonical titles. "Required fields (verified)" → "Required
+ * fields". Substrates frequently inline reviewer notes; the canonical
+ * title is what the lint cares about.
+ */
+export function normalizeSectionTitle(title: string): string {
+  return title.replace(TRAILING_PAREN_RE, '').trim();
+}
 
 /**
  * Walk a markdown body string and return a flat list of its sections in
