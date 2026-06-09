@@ -1,23 +1,25 @@
 # scripts/
 
-Planned location for the lint CLIs that enforce the three contracts.
+> **Status update:** the lint CLIs described here as "planned" have
+> **shipped**. They are implemented in [`../src/`](../src/) (parser,
+> registry, per-kind lint runners) with the entrypoint at
+> [`../bin/e2e-ai-kit.js`](../bin/e2e-ai-kit.js), and exposed as the
+> global `e2e-ai-kit` command (see [`../README.md`](../README.md) §
+> Installation):
+>
+> ```sh
+> e2e-ai-kit lint case          # contracts/case-schema.md
+> e2e-ai-kit lint app-context   # contracts/app-context-schema.md
+> e2e-ai-kit lint slot          # contracts/slot-contract.md
+> ```
 
-## Planned scripts (TODO)
+The three contracts enforced:
 
-| Script | Purpose | Reference |
+| Lint | Validates | Contract |
 |---|---|---|
-| `case-lint.ts` | Validate case `.md` files against the schema | [`../contracts/case-schema.md`](../contracts/case-schema.md) |
-| `app-context-lint.ts` | Validate substrate's `tests/app.context.md` against the schema | [`../contracts/app-context-schema.md`](../contracts/app-context-schema.md) |
-| `skill-slot-lint.ts` | Validate `.claude/skills/<framework>/SKILL.md` against the slot contract | [`../contracts/slot-contract.md`](../contracts/slot-contract.md) |
+| `lint case` | `tests/cases/*.md` | [`../contracts/case-schema.md`](../contracts/case-schema.md) |
+| `lint app-context` | `tests/app.context.md` | [`../contracts/app-context-schema.md`](../contracts/app-context-schema.md) |
+| `lint slot` | `.claude/skills/<framework>/SKILL.md` | [`../contracts/slot-contract.md`](../contracts/slot-contract.md) |
 
-These will be exposed via a CLI such as `npx e2e-ai-kit lint case`,
-`npx e2e-ai-kit lint app-context`, `npx e2e-ai-kit lint slot`. The
-`package.json` and CLI wrapper do not exist yet.
-
-## When these scripts get built
-
-Per [`../docs/ONBOARDING.md`](../docs/ONBOARDING.md), each stage gates
-on a lint pass. The first substrate (mcd-website) is currently
-operating without these lints; the first substrate to require them
-will be substrate #2, which is the trigger to write them. Until then,
-this directory is a placeholder.
+This directory is retained as a placeholder for any future standalone
+scripts; the lint logic itself lives in `src/`, not here.

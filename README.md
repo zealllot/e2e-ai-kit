@@ -35,16 +35,24 @@ qor-like (and eventually any) legacy admin codebase to produce both
 │   ├── case-schema.md                  case `.md` schema (Product component 2)
 │   ├── app-context-schema.md           Application Context Document schema (6)
 │   └── slot-contract.md                framework slot contract (5)
-├── skills/
-│   └── maintenance/SKILL.md            Tier 1/2/3 classification (3, single authority)
-├── scripts/                            lints + CLIs (case-lint, app-context-lint, ...)
-└── templates/                          scaffolding for new substrates
+├── skills/                             cross-framework Product skills (4-stage pipeline + sedimentation)
+│   ├── exploration/SKILL.md            stage 1 — probe substrate, fill app.context.md
+│   ├── write-case/SKILL.md             stage 2 — write reviewable case `.md`
+│   ├── automation/SKILL.md             stage 3 — approved case → spec + page object
+│   ├── maintenance/SKILL.md            stage 4 — Tier 1/2/3 classification (single authority)
+│   └── sedimentation/SKILL.md          Workflow C — route a discovery to its home
+├── src/                                lint CLI implementation (case / app-context / slot)
+├── bin/e2e-ai-kit.js                   lint CLI entrypoint
+├── install.sh                          installer: symlink skills + global `e2e-ai-kit` command
+├── scripts/                            (placeholder — the lints live in src/, not here)
+└── templates/                          (placeholder — substrate scaffolding, not yet shipped)
 ```
 
 ## What lives where (and what doesn't)
 
 - **In this repo (Product)**: methodology, contracts, cross-framework
-  skills (`maintenance`), lints, onboarding flow, templates.
+  skills (`exploration` / `write-case` / `automation` / `maintenance` /
+  `sedimentation`), lints, onboarding flow, templates.
 - **NOT in this repo (Substrate)**: anything tied to a specific
   business or admin app — resource lists, role lists, routes, business
   concepts, individual case `.md` contents, specs, page objects,
@@ -54,13 +62,35 @@ qor-like (and eventually any) legacy admin codebase to produce both
 See [`CONTEXT.md`](./CONTEXT.md) for the strict Product / Substrate /
 Output boundary.
 
-## Distribution (planned)
+## Installation
 
-- npm package `@theplant/e2e-ai-kit` — provides lint CLIs and templates
-- GitHub template repo — greenfield substrates start from a known-good scaffold
+```bash
+git clone <e2e-ai-kit>
+cd e2e-ai-kit && ./install.sh
+```
 
-Neither is shipped yet. mcd-website (first substrate) currently
-vendors the kit by direct file copy during onboarding.
+`install.sh` installs the kit's deps once in the clone, symlinks the
+skills under `skills/` into `~/.claude/skills/`, symlinks `contracts/`
+so skill links resolve, and generates a global `e2e-ai-kit` command that
+runs the lint CLI **from the clone** (via the clone's own `tsx`). A
+substrate therefore needs zero local dependencies and never has to know
+where the kit lives — from any project:
+
+```bash
+e2e-ai-kit lint case          # validates tests/cases/*.md
+e2e-ai-kit lint app-context   # validates tests/app.context.md
+e2e-ai-kit lint slot          # validates .claude/skills/<framework>/SKILL.md
+```
+
+Update later with `git pull` in the clone — no reinstall needed. If
+install.sh prints a PATH notice, add `~/.local/bin` to your PATH once.
+
+## Distribution (still planned)
+
+- npm package `@theplant/e2e-ai-kit` — a published package with compiled
+  JS so `npm install` works standalone (today the CLI runs via the
+  clone's `tsx`, set up by `install.sh`)
+- GitHub template repo — greenfield substrates start from a scaffold
 
 ## Status of load-bearing claims
 

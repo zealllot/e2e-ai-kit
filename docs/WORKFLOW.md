@@ -136,13 +136,21 @@ in [`../PURPOSE.md`](../PURPOSE.md).**
 | 4-Agent pipeline | informal, lives in operator's head + skill docs | same, plus governance SLAs enforced |
 | Tier classification | functional | sole authority in `skills/maintenance/SKILL.md`; slot duplication removed |
 | Case `.md` | ~13 cases, schema half-emergent | strict schema; closed `case_type` enum; mandatory `reviewer_checked` |
-| Application Context Document | 475 lines, no schema | 10 required sections + per-section `source:` markers + probe split |
+| Application Context Document | 475 lines, no schema | 11 required sections + per-section `source:` markers + probe split |
 | Framework slot | `playwright-qor` mixes Playwright generic + qor + mcd-website | covers only S1-S9; cross-framework and substrate content forbidden |
 | Sedimentation | "remember to update the skill" | auto-PR pipeline with 3-way routing |
 | Lint gates | 1 (matrix-sync drift) | 4 (case-lint, app-context-lint, skill-slot-lint, matrix-sync), all CI-required |
 | Risk management | 5 named risks, no mitigations | 5 {risk, mitigation, detection} triples |
 | Governance | none | 3 gates with SLAs + Maintenance Agent trigger model + CODEOWNERS |
 | Second substrate | does not exist | onboarding doc ready; B2 unverified until then |
+
+> **Update (kit v0.2):** several v1.0 targets above have since shipped on
+> the **Product** side — the 4-stage pipeline + sedimentation are now
+> invokable skills (`exploration` / `write-case` / `automation` /
+> `maintenance` / `sedimentation`), three of the four lint gates ship
+> (`e2e-ai-kit lint case|app-context|slot`; matrix-sync stays
+> substrate-side), and `install.sh` distributes them. Still open:
+> CI-required enforcement and a second substrate.
 
 ## Your day-to-day responsibilities
 

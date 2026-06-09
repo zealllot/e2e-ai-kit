@@ -5,7 +5,7 @@ during Onboarding Phase 1 / 2 / 3.
 
 ## Planned templates (TODO)
 
-- `app.context.md.template` — empty 10-section skeleton with frontmatter
+- `app.context.md.template` — empty 11-section skeleton with frontmatter
   + per-section `<!-- source: ... -->` markers, for Onboarding Phase 2
 - `skill-slot.md.template` — empty S1-S9 skeleton with frontmatter, for
   Onboarding Phase 1
