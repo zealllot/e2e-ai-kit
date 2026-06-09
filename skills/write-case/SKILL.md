@@ -16,6 +16,8 @@ writes the spec; a human approves in between.
 - "Write a test for `<feature>`" on an onboarded substrate
 - A requirement changed and a case must be added or updated to match
 - Splitting one sprawling feature into multiple cases
+- A ticket / PR body / Slack / Jira link carries **acceptance criteria**
+  you want turned into test items (see § Acceptance criteria below)
 
 ## When NOT to use
 
@@ -40,6 +42,10 @@ do not invent field lists, validators, or routes.
    `:line` where possible
 4. **For a requirement-change update**: the existing case file + what
    changed, so the diff is minimal and `source_docs` stays accurate
+5. **(Optional) Acceptance criteria** — a ticket / PR body / Slack / Jira
+   link describing this feature. Use it to decide *which scenarios* to
+   cover and record the source; it does **not** replace source tracing
+   (see § Acceptance criteria below)
 
 ## The flow
 
@@ -100,6 +106,24 @@ A value outside this five-element enum fails lint with
 lint only demands them once `status: approved`:
 `approved_by`, `approved_at`, `reviewer_checked`. Leaving the case at
 `pending-approval` without them is correct and passes lint.
+
+## Acceptance criteria → test items (optional input)
+
+When the feature comes with a ticket / PR body / Slack / Jira link stating
+acceptance criteria (ACs), use them to decide **which scenarios the case
+must cover** — turn each AC into a test item under `## Tests`, named in the
+ticket's wording so a reviewer can map it straight back.
+
+- **Record the source in the body** (free text, e.g. a line
+  `> Acceptance criteria: JIRA-1234 / PR #56` under the heading). Do NOT
+  add a frontmatter key for it — the schema/lint stays unchanged.
+- **The tracing rule still holds.** ACs tell you *what scenario / expected
+  outcome* to test; the concrete field names, error strings, and routes a
+  test asserts still come from `source_docs` (real source files), not from
+  the ticket's prose. If an AC and the source disagree, follow the source
+  and flag the mismatch for the human reviewer.
+- An AC with **no corresponding behaviour in the source** is a question
+  for the human, not something to invent — list it and ask.
 
 ## Body — write the intent, traceably
 

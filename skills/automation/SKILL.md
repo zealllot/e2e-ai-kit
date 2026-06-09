@@ -17,6 +17,8 @@ implement its intent, iterating until the spec runs green. It writes
   `lives_in` must be generated
 - A requirement change produced a newly-approved or updated case whose
   spec must be (re)generated
+- **Several** approved cases are waiting — generate their specs in
+  parallel (see § Generating many cases below)
 
 ## When NOT to use
 
@@ -63,6 +65,25 @@ Gather these before writing a line of code. If any is missing,
 6. Iterate to green: npx playwright test <spec>   (budget below)
 7. Hand off the green spec; note any discovery for sedimentation (C)
 ```
+
+## Generating many cases at once (parallel)
+
+When several approved cases are waiting for their specs, don't do them one
+at a time — dispatch **one subagent per case in parallel** (concurrency
+~3, like PRoctor's per-item dispatch). Each subagent runs the full flow
+above independently: gate → read the slot → write spec + page object →
+iterate to green → self-check.
+
+- **File-conflict rule:** spec files are per-case (`lives_in` differs), so
+  they never collide. But several cases for the **same resource may share
+  one page object** — two subagents writing the same
+  `tests/pages/<resource>.page.ts` will clash. Either (a) generate the
+  shared page object once up front, then fan out the specs, or (b) group
+  cases by page object and parallelize only across groups.
+- Each subagent does its own self-check (lint the case + run its spec
+  green). One case failing does **not** block the others — collect results
+  and report failures separately (a failure usually means that case's
+  intent or the slot is wrong, not the others').
 
 ## What comes from where
 
