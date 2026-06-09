@@ -36,6 +36,7 @@ qor-like (and eventually any) legacy admin codebase to produce both
 │   ├── app-context-schema.md           Application Context Document schema (6)
 │   └── slot-contract.md                framework slot contract (5)
 ├── skills/                             cross-framework Product skills (4-stage pipeline + sedimentation)
+│   ├── e2e-kit/SKILL.md                one-entry orchestrator — routes to the stages below, stops at human gates
 │   ├── exploration/SKILL.md            stage 1 — probe substrate, fill app.context.md
 │   ├── write-case/SKILL.md             stage 2 — write reviewable case `.md`
 │   ├── automation/SKILL.md             stage 3 — approved case → spec + page object

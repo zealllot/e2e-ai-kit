@@ -65,6 +65,22 @@ Exploration → Test Case → Automation → Maintenance      (+ Sedimentation)
 You drive it in plain language; each stage is a skill. The **only** step
 that must be a human is approving a case.
 
+### Fast path — the `e2e-kit` one-entry orchestrator
+
+Don't want to remember which stage to name? Say **`用 e2e-kit …`** (or
+`/e2e-kit`, "一键加测试", "一键接入测试"). The `e2e-kit` skill is a thin
+router: it detects whether the project is onboarded, then drives the
+stages below for you and **stops at the two human gates** (case approval,
+and the auth/human sections during onboarding) — it never self-approves
+and never writes the case or spec itself, it just delegates to the five
+skills at the right moment.
+
+- `用 e2e-kit 给优惠券功能加个 e2e 测试` → write-case → 👤 approve → automation → run.
+- `一键接入测试` (fresh project) → exploration → 👤 sign auth/human sections → into the loop.
+
+Naming a single stage still works and skips the router (e.g. "this spec
+is failing, handle it" → straight to `maintenance`).
+
 ---
 
 ## 4. The five skills — when to use, what you say, what it produces
