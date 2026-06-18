@@ -47,16 +47,53 @@ not invent routes, roles, or environments from another substrate.
 1. Confirm inputs above. No running instance / no source → STOP, ask.
 2. Set frontmatter: substrate, last_full_exploration (today, YYYY-MM-DD),
    exploration_agent (claude-<model> (Exploration Agent)).
-3. Probe + fill ONLY the sections this Agent owns (table below). Write
-   each section's <!-- source: ... --> marker as the FIRST non-blank line.
-4. §4 Auth strategy: DRAFT it, set last_probed, but DO NOT write
+3. WALK each critical flow in a real browser (Chrome DevTools or
+   claude-in-chrome) BEFORE writing any section — log in, then click
+   through the substrate's primary end-to-end path. Reading source + curl
+   is NOT a substitute (see "Probe for real" below). Note what the walk
+   reveals.
+4. Fill ONLY the sections this Agent owns (table below) from what the walk
+   + source together show. Write each section's <!-- source: ... -->
+   marker as the FIRST non-blank line.
+5. §4 Auth strategy: DRAFT it from the walk (how many gateways? 2FA? SSO?
+   storage-state shape?), set last_probed, but DO NOT write
    last_verified_by_human — a human signs that. Flag it for review.
-5. New BUSINESS quirk found while probing? Do NOT invent it into the doc.
-   Flag it for a human to add to §7 Known quirks (a human section).
-6. Self-check: lint app-context must exit 0 (command below). Fix the
+6. New BUSINESS quirk found while probing? Do NOT invent it into the doc.
+   Flag it for a human to add to §7 Known quirks (a human section). A
+   FRAMEWORK quirk the walk exposes (forms that re-encode on submit,
+   pages that never go network-idle, unstable ids) → flag for
+   sedimentation into the framework slot, not into a probe section.
+7. Self-check: lint app-context must exit 0 (command below). Fix the
    reported ruleId, re-run until green.
-7. Hand off: tell the human which §4 marker awaits their signature.
+8. Hand off: tell the human which §4 marker awaits their signature.
 ```
+
+## Probe for real — drive the app, don't infer it from source
+
+Reading routes / controllers / templates and `curl`-ing endpoints tells
+you what the code INTENDS. It does not tell you what a real browser
+session actually does — and the gap between the two is exactly where the
+Automation Agent later burns whole iterations. Before filling any section,
+drive each critical flow in a real browser (Chrome DevTools or
+claude-in-chrome): log in, then walk the substrate's primary end-to-end
+path click by click, watching the network panel.
+
+**Walk first, write second. A flow you have not clicked through is not
+probed** — `curl` and source-reading are inputs to the walk, never a
+replacement for it.
+
+What the live walk catches that source + curl miss:
+
+| Signal to watch on the walk | Why source-reading misses it |
+|---|---|
+| **How many auth gateways** stand between the URL and the app (e.g. a platform/admin login, THEN a separate app login) | routes show one login handler; the real redirect chain only appears in the browser |
+| **Forms that re-encode / re-render on submit** (fields renamed, values re-posted) | template source shows the initial markup, not what the live form posts back |
+| **Whether the page ever goes network-idle** (long-polling, websockets, beacons keep it busy) | invisible in source; only the network panel during a real session shows a `networkidle` wait will hang |
+| **Stability of session / order / entity ids** across a flow (regenerated per request? per step?) | ids read from source are guesses; the walk shows the actual values a selector must survive |
+
+Route findings → §5; auth-gateway findings → §4 (draft); business
+findings → a §7 flag for a human; framework findings (re-encode,
+networkidle, unstable ids) → a sedimentation flag for the framework slot.
 
 ## Sections this Agent owns
 
